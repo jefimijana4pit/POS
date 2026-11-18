@@ -1,0 +1,351 @@
+package com.example.marketpos.i18n
+
+import com.example.marketpos.model.PaymentMethod
+import com.example.marketpos.model.ProductCategory
+import com.example.marketpos.model.ReportPeriodType
+import com.example.marketpos.model.UserRole
+import com.example.marketpos.model.VenueMode
+
+object EnglishStrings : AppStrings {
+    override val appName = "MarketPOS"
+    override val loginSubtitle = "Fast checkout & sales analytics for markets, bars & restaurants"
+    override val selectVenueMode = "Business Mode"
+    override val venueMarketLabel = "Market"
+    override val venueBarLabel = "Bar / Restaurant"
+    override val selectRole = "Select Role"
+    override val workerRole = "Worker"
+    override val marketWorkerRole = "Market Worker"
+    override val restaurantWorkerRole = "Restaurant Worker"
+    override val adminRole = "Admin"
+    override val selectWorker = "Select Worker"
+    override val enterPin = "Enter PIN"
+    override val pinHintWorker = "Demo Worker PIN: 1234"
+    override val pinHintAdmin = "Demo Admin PIN: 0000"
+    override val signInButton = "Sign In"
+    override val invalidPinError = "Incorrect PIN. Please try again."
+    override val quickDemoTitle = "One-Tap Demo Login"
+    override val demoWorkerBtn = "Worker (Marko)"
+    override val demoMarketWorkerBtn = "Market (Marko)"
+    override val demoRestaurantWorkerBtn = "Restaurant (Jelena)"
+    override val demoAdminBtn = "Admin"
+    override val adminChooseWorkspaceTitle = "Choose Business Module"
+    override val adminChooseWorkspaceSubtitle = "Select a workspace to manage analytics, orders, inventory, and tables."
+    override val openMarketModuleBtn = "Open Market"
+    override val openRestaurantModuleBtn = "Open Restaurant"
+    override val freeTablesSummary: (Int, Int) -> String = { free, total -> "$free / $total free tables" }
+    override val pendingOrdersSummary: (Int) -> String = { n -> "$n pending" }
+    override val activeProductsSummary: (Int) -> String = { n -> "$n items" }
+
+    override val settings = "Settings"
+    override val logout = "Sign Out"
+    override val back = "Back"
+    override val cancel = "Cancel"
+    override val save = "Save"
+    override val delete = "Delete"
+    override val edit = "Edit"
+    override val close = "Close"
+    override val all = "All"
+    override val searchProducts = "Search items or SKU..."
+    override val noProductsFound = "No matching products"
+    override val activeCurrencyLabel = "EUR"
+
+    override val posRegister = "Register"
+    override val cartTitle = "Active Cart"
+    override val cartEmptyTitle = "Cart is empty"
+    override val cartEmptyHint = "Tap any item from the catalog to add it to the current sale."
+    override val clearCart = "Clear"
+    override val itemsCount: (Int) -> String = { count -> if (count == 1) "1 item" else "$count items" }
+    override val subtotalLabel = "Subtotal"
+    override val pdvLabel = "VAT (20%)"
+    override val totalLabel = "Grand Total"
+    override val openCartBtn = "Cart"
+    override val checkoutBtn = "Payment"
+    override val swipeToRemoveHint = "Swipe left to remove item"
+    override val addOne = "Increase"
+    override val removeOne = "Decrease"
+    override val outOfStock = "Out of stock"
+    override val outOfStockBannerTitle: (Int) -> String = { n -> "Out of stock ($n)" }
+    override val viewLabel = "View"
+    override val showAllLabel = "Show all"
+    override val inStockCount: (Int, String) -> String = { n, unit -> "In stock: $n $unit" }
+    override val lowStockCount: (Int, String) -> String = { n, unit -> "Low stock: $n $unit" }
+    override val maxStockReached: (String, Int) -> String = { name, n -> "Max available stock for \"$name\": $n" }
+
+    override val barFloorTitle = "Tables"
+    override val navTables = "Tables"
+    override val tableFilterFree = "Free"
+    override val tableFilterMine = "My Tables"
+    override val tableFilterBusy = "Busy"
+    override val tableSeatsCount: (Int) -> String = { n -> "$n seats" }
+    override val tableStatusFree = "Free"
+    override val tableStatusLockedByYou = "Your Table"
+    override val tableStatusLockedByOther: (String) -> String = { name -> "Locked by $name" }
+    override val tableStatusAwaitingCleanup = "Paid • Needs Cleanup"
+    override val tableBusyItemsSummary: (Int) -> String = { n -> if (n == 1) "1 item" else "$n items" }
+    override val tableEmptyOrderLabel = "Locked • no items yet"
+    override val tableLockedCannotInteract: (String) -> String = { name -> "This table is locked by $name. Other workers cannot interact." }
+    override val tableAutoUnlockIn: (String) -> String = { time -> "Auto-unlock in $time" }
+    override val tableCleanupBannerTitle = "Bill paid — waiting for cleanup"
+    override val tableCleanupBannerSubtitle: (String) -> String = { time ->
+        "Unlock once cleaned (auto-unlocks in $time), or start a new order if new guests arrive right away."
+    }
+    override val tableCleanedUnlockBtn = "Cleaned — Unlock"
+    override val newGuestsOrderBtn = "New Guests — New Order"
+    override val unlockEmptyTableBtn = "Unlock Table"
+    override val tableOrderTitle: (String) -> String = { tableName -> "Order • $tableName" }
+    override val payAndPrintBillBtn = "Pay & Print Bill"
+    override val receiptTableLabel = "Table"
+    override val backToTableBtn = "Back to Table"
+    override val addTableTitle = "Add Table"
+    override val editTableTitle = "Edit Table"
+    override val tableNameLabel = "Table Name / Number"
+    override val tableZoneLabel = "Zone (Main Hall, Patio, Bar)"
+    override val tableCapacityLabel = "Seats"
+    override val deleteTableTitle = "Delete Table"
+    override val deleteTableConfirm: (String) -> String = { name -> "Are you sure you want to remove \"$name\"?" }
+    override val forceUnlockBtn = "Force Unlock"
+    override val noTablesDefined = "No tables configured yet."
+    override val tableBusyStatusLabel = "Busy"
+
+    override val navOrders = "Orders"
+    override val navBills = "Bills"
+    override val ordersTitle = "Orders"
+    override val billsTitle = "Bills"
+    override val orderDetailsTitle: (String) -> String = { num -> "Order • $num" }
+    override val orderStatusPending = "Pending"
+    override val orderStatusFinished = "Finished"
+    override val orderStatusCancelled = "Cancelled"
+    override val cancelledItemBadge = "Cancelled"
+    override val activeItemsSection = "Active Items"
+    override val cancelledItemsSection = "Cancelled Items"
+    override val savePendingOrderBtn = "Save Pending"
+    override val takeOrderBtn = "Pending Order"
+    override val editingOrderBanner: (String) -> String = { num -> "Editing order • $num" }
+    override val doneEditingBtn = "Details"
+    override val editOrderBtn = "Edit Order"
+    override val addItemsBtn = "Add Items"
+    override val cancelOrderBtn = "Cancel Order"
+    override val cancelItemBtn = "Cancel Item"
+    override val cancelOrderConfirmTitle = "Cancel Order"
+    override val cancelOrderConfirmMessage: (String) -> String = { num -> "Are you sure you want to fully cancel order $num?" }
+    override val confirmCancelBtn = "Cancel Order"
+    override val payAndFinishOrderBtn = "Pay & Finish"
+    override val viewBillBtn = "View Bill"
+    override val counterOrderLabel = "Counter"
+    override val noOrdersFound = "No orders found."
+    override val noBillsFound = "No bills found."
+    override val canceledOrdersSummary: (Int) -> String = { n -> "$n cancelled" }
+    override val orderSavedMessage = "Order saved as pending."
+
+    override val paymentTitle = "Complete Payment"
+    override val paymentMethodLabel = "Payment Method"
+    override val cashLabel = "Cash"
+    override val cardLabel = "Card"
+    override val amountDue = "Amount Due"
+    override val cashReceivedLabel = "Cash Received (EUR)"
+    override val exactAmount = "Exact"
+    override val changeDueLabel = "Change Due"
+    override val insufficientCashError = "Cash received must be at least the total due."
+    override val cardReadyNote = "Card terminal ready. Confirm payment once approved."
+    override val completeSaleBtn = "Complete & Issue Receipt"
+
+    override val receiptTitle = "Digital Receipt"
+    override val storeNameHeader = "MARKET PLUS RETAIL"
+    override val storeAddressHeader = "142 King Alexander Blvd, Belgrade"
+    override val receiptNumberLabel = "Receipt No."
+    override val dateTimeLabel = "Date & Time"
+    override val cashierLabel = "Staff"
+    override val paymentUsedLabel = "Payment"
+    override val printReceiptBtn = "Print Receipt"
+    override val newSaleBtn = "New Sale"
+    override val thankYouFooter = "Thank you for visiting!"
+    override val printSuccessSystem = "Sent to Android System Print service."
+    override val printSuccessThermal = "ESC/POS receipt sent to thermal printer."
+    override val printSimulatedTitle = "Thermal ESC/POS Print Preview"
+    override val bluetoothPermissionNeeded = "Bluetooth permission (Android 12+) is required to connect to external thermal printers."
+    override val grantPermissionBtn = "Allow Bluetooth"
+
+    override val adminPanelTitle = "Admin Analytics"
+    override val navDashboard = "Dashboard"
+    override val navWorkerLog = "Sales Log"
+    override val navProducts = "Products"
+    override val kpiRevenue = "Total Revenue"
+    override val kpiTransactions = "Transactions"
+    override val kpiAvgBasket = "Avg Basket"
+    override val kpiActiveItems = "Active SKUs"
+    override val chartRevenueOverTime = "Revenue Over Time"
+    override val chartTopProducts = "Top-Selling Products"
+    override val chartSalesByWorker = "Sales Volume per Worker"
+    override val tapDotHint = "Tap any chart dot for a daily overview"
+    override val pickDateLabel = "Pick date"
+    override val allDaysBtn = "All days"
+    override val dateOverviewTitle: (String) -> String = { date -> "Overview for $date" }
+    override val cashVsCardLabel = "Cash / Card"
+    override val dayReceiptsTitle = "Receipts on selected date"
+    override val noSalesOnDate = "No recorded sales on the selected date."
+    override val soldUnitsSuffix: (Int) -> String = { n -> "$n sold" }
+    override val noChartData = "No recorded sales yet."
+    override val filterByWorker = "Filter by Worker"
+    override val allWorkers = "All Workers"
+    override val workerSummaryTitle = "Worker Performance"
+    override val transactionItemsTitle = "Line Items"
+    override val reprintReceiptBtn = "Reprint"
+    override val noTransactionsFound = "No transactions match the selected filter."
+    override val addProductTitle = "Add Product"
+    override val editProductTitle = "Edit Product"
+    override val productNameSrLabel = "Name (Serbian Latin)"
+    override val productNameEnLabel = "Name (English)"
+    override val productSkuLabel = "SKU Code"
+    override val productCategoryLabel = "Category"
+    override val productPriceLabel: (String) -> String = { curr -> "Price ($curr)" }
+    override val productUnitSrLabel = "Unit (SR)"
+    override val productUnitEnLabel = "Unit (EN)"
+    override val productStockLabel = "Stock Quantity"
+    override val productLowStockThresholdLabel = "Low Stock Threshold"
+    override val productAvailableLabel = "Available for sale"
+    override val kpiLowStock = "Low / Out Stock"
+    override val lowStockAlertsTitle = "Low & Out of Stock Alerts"
+    override val lowStockFilter = "Low Stock"
+    override val outOfStockFilter = "Out of Stock"
+    override val quickRestockBtn = "+10 Restock"
+    override val deleteProductTitle = "Delete Product"
+    override val deleteProductConfirm: (String) -> String = { name -> "Are you sure you want to remove \"$name\" from the catalog?" }
+    override val validationRequiredError = "Please fill in all required fields."
+    override val validationPriceError = "Enter a valid price greater than 0."
+    override val validationStockError = "Enter a valid stock quantity (0 or more)."
+
+    override val settingsTitle = "Settings"
+    override val venueModeSection = "Business Mode"
+    override val venueModeLabel = "Select Operation Mode"
+    override val venueModeMarketDesc = "Direct retail item checkout without table management"
+    override val venueModeBarDesc = "Table floor, worker table locks, and cleanup auto-unlock"
+    override val languageCurrencySection = "Language & Currency"
+    override val languageLabel = "App Language"
+    override val serbianOption = "Srpski (Latinica) • RSD"
+    override val englishOption = "English • EUR"
+    override val exchangeRateLabel = "Exchange Rate (1 EUR in RSD)"
+    override val exchangeRateApplied = "Exchange rate updated."
+    override val exchangeRateInvalid = "Enter a valid rate greater than 0."
+    override val applyRateBtn = "Apply Rate"
+    override val appearanceSection = "Appearance & Accessibility"
+    override val themeModeLabel = "Theme Mode"
+    override val themeSystem = "System"
+    override val themeLight = "Light"
+    override val themeDark = "Dark"
+    override val dynamicColorLabel = "Dynamic Color (Material You)"
+    override val dynamicColorSubtitle = "Adapt colors from system wallpaper (Android 12+)"
+    override val fontScaleLabel = "Font Size / UI Scale"
+    override val fontNormal = "Normal"
+    override val fontLarge = "Large"
+    override val fontExtraLarge = "Extra Large"
+    override val printerSection = "Printer Configuration"
+    override val printerTypeLabel = "Receipt Printer Driver"
+    override val printerSystemTitle = "Standard Android Print Framework"
+    override val printerSystemSubtitle = "PrintManager for Wi-Fi and system printers"
+    override val printerThermalTitle = "External Thermal Printer"
+    override val printerThermalSubtitle = "Bluetooth / USB ESC/POS portable printers"
+    override val scanPrintersBtn = "Refresh BT Printers"
+    override val selectPrinterLabel = "Target Thermal Device"
+    override val testPrintBtn = "Test Print"
+    override val bluetoothGrantedStatus = "Bluetooth permissions granted"
+    override val bluetoothMissingStatus = "Bluetooth permission required"
+    override val testPrintSuccess = "Test receipt sent successfully."
+
+    override val globalOverviewTitle = "Global Overview"
+    override val globalOverviewSubtitle = "Combined earnings, stock levels, and branch comparison"
+    override val openGlobalViewBtn = "Open Global View"
+    override val marketsSectionTitle = "Markets"
+    override val barsSectionTitle = "Bars & Restaurants"
+    override val addMarketBtn = "Add Market"
+    override val addBarBtn = "Add Bar / Restaurant"
+    override val addLocationTitle: (VenueMode) -> String = { mode -> if (mode == VenueMode.MARKET) "New Market" else "New Bar / Restaurant" }
+    override val editLocationTitle = "Edit Location"
+    override val locationNameLabel = "Location Name"
+    override val locationAddressLabel = "Location Address"
+    override val copyStarterCatalogLabel = "Include starter catalog (and tables for bars)"
+    override val deleteLocationTitle = "Delete Location"
+    override val deleteLocationConfirm: (String) -> String = { name -> "Delete location \"$name\" and its catalog?" }
+    override val cannotDeleteLocationMsg = "Cannot delete the last location of this type or a location with locked tables."
+    override val globalTabEarnings = "Global Earnings"
+    override val globalTabStock = "Global Stock"
+    override val globalFilterAllLocations = "All Locations"
+    override val globalFilterMarketsOnly = "Markets Only"
+    override val globalFilterBarsOnly = "Bars Only"
+    override val earningsByLocationTitle = "Earnings by Location"
+    override val globalStockValueLabel = "Stock Value"
+    override val globalTotalUnitsLabel = "Total Units"
+    override val globalSkusLabel = "Total SKUs"
+    override val openLocationAdminBtn = "Open Branch"
+    override val pdfReportTitle = "PDF Report"
+    override val exportPdfReportBtn = "Export PDF Report"
+    override val reportPeriodDaily = "Daily"
+    override val reportPeriodMonthly = "Monthly"
+    override val reportPeriodDateRange = "Date Range"
+    override val reportPeriodTypeName: (ReportPeriodType) -> String = { type ->
+        when (type) {
+            ReportPeriodType.DAILY -> "Daily Report"
+            ReportPeriodType.MONTHLY -> "Monthly Report"
+            ReportPeriodType.DATE_RANGE -> "Date Range Report"
+        }
+    }
+    override val reportSelectLocationLabel = "Target Location"
+    override val reportAllLocationsOption = "All Locations (Global)"
+    override val reportPickDateBtn = "Pick Date"
+    override val reportStartDateLabel = "From Date"
+    override val reportEndDateLabel = "To Date"
+    override val reportGeneratedAtLabel = "Generated"
+    override val reportFinishedBillsLabel = "Finished Bills"
+    override val reportCancelledBillsLabel = "Canceled"
+    override val reportTablesHandledLabel = "Tables"
+    override val reportUnitsSoldLabel = "Units Sold"
+    override val reportWorkerStatsTitle = "Statistics per Worker"
+    override val reportColWorker = "Worker"
+    override val reportColBills = "Bills"
+    override val reportColTables = "Tables"
+    override val reportColProducts = "Products Sold (Qty & Breakdown)"
+    override val reportColRevenue = "Revenue"
+    override val reportFinShort = "Fin"
+    override val reportCancShort = "Canc"
+    override val reportItemsShort = "items"
+    override val reportUnitsShort = "pcs"
+    override val reportNoWorkerData = "No bills or orders recorded in the selected period."
+    override val reportDownloadPdfBtn = "Download PDF"
+    override val reportSharePdfBtn = "Share / Open PDF"
+    override val reportSavedToDownloadsMsg: (String) -> String = { file -> "PDF saved to Downloads: $file" }
+    override val reportPageLabel: (Int) -> String = { page -> "Page $page" }
+    override val globalReportSubtitle = "All Markets, Bars & Restaurants"
+
+    override val categoryName: (ProductCategory) -> String = { category ->
+        when (category) {
+            ProductCategory.BAKERY -> "Bakery"
+            ProductCategory.DAIRY -> "Dairy"
+            ProductCategory.BEVERAGES -> "Beverages"
+            ProductCategory.PRODUCE -> "Produce"
+            ProductCategory.SNACKS -> "Snacks"
+            ProductCategory.HOUSEHOLD -> "Household"
+            ProductCategory.COFFEE_TEA -> "Coffee & Tea"
+            ProductCategory.BAR_DRINKS -> "Bar Drinks"
+            ProductCategory.MAIN_DISHES -> "Main Dishes"
+            ProductCategory.DESSERTS -> "Desserts"
+        }
+    }
+    override val paymentMethodName: (PaymentMethod) -> String = { method ->
+        when (method) {
+            PaymentMethod.CASH -> "Cash"
+            PaymentMethod.CARD -> "Card"
+        }
+    }
+    override val roleName: (UserRole) -> String = { role ->
+        when (role) {
+            UserRole.MARKET_WORKER -> "Market Worker"
+            UserRole.RESTAURANT_WORKER -> "Restaurant Worker"
+            UserRole.ADMIN -> "Admin"
+        }
+    }
+    override val venueName: (VenueMode) -> String = { mode ->
+        when (mode) {
+            VenueMode.MARKET -> "Market"
+            VenueMode.BAR_RESTAURANT -> "Bar / Restaurant"
+        }
+    }
+}

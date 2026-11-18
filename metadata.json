@@ -1,0 +1,8 @@
+{
+  "name": "MarketPOS",
+  "description": "Pure native Android 12+ Point of Sale and sales tracking application for small retail markets with Serbian Latin (RSD) and English (EUR) support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

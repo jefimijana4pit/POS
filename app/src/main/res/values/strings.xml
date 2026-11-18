@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MarketPOS</string>
+    <string name="receipt_print_job_name">MarketPOS Receipt</string>
+</resources>
