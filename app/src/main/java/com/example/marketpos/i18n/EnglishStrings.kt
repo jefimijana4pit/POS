@@ -40,6 +40,7 @@ object EnglishStrings : AppStrings {
     override val logout = "Sign Out"
     override val back = "Back"
     override val cancel = "Cancel"
+    override val add = "Add"
     override val save = "Save"
     override val delete = "Delete"
     override val edit = "Edit"

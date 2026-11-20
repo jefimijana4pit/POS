@@ -43,6 +43,7 @@ interface AppStrings {
     val logout: String
     val back: String
     val cancel: String
+    val add: String
     val save: String
     val delete: String
     val edit: String

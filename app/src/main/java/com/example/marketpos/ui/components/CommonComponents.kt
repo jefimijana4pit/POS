@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,13 +23,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.BakeryDining
 import androidx.compose.material.icons.rounded.Bluetooth
 import androidx.compose.material.icons.rounded.Cake
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CleaningServices
 import androidx.compose.material.icons.rounded.Cookie
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Eco
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Egg
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.LocalBar
@@ -38,16 +42,22 @@ import androidx.compose.material.icons.rounded.Print
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -196,6 +206,126 @@ fun PosTopAppBar(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     )
+}
+
+@Composable
+fun AddActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    label: String = LocalStrings.current.add,
+    testTag: String? = null
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
+        modifier = modifier
+            .height(40.dp)
+            .minimumInteractiveComponentSize()
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Add,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+fun AddFloatingActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    label: String = LocalStrings.current.add,
+    contentDescription: String = label,
+    testTag: String? = null
+) {
+    ExtendedFloatingActionButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        icon = {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = contentDescription
+            )
+        },
+        text = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 1
+            )
+        },
+        modifier = modifier.then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
+    )
+}
+
+@Composable
+fun EditActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    contentDescription: String = LocalStrings.current.edit,
+    testTag: String? = null
+) {
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(12.dp),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.72f),
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+        ),
+        modifier = modifier.then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Edit,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(19.dp)
+        )
+    }
+}
+
+@Composable
+fun DeleteActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    contentDescription: String = LocalStrings.current.delete,
+    testTag: String? = null
+) {
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(12.dp),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.78f),
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+        ),
+        modifier = modifier.then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.DeleteOutline,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(19.dp)
+        )
+    }
 }
 
 @Composable

@@ -17,21 +17,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.outlined.PointOfSale
-import androidx.compose.material.icons.outlined.ReceiptLong
-import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.DeleteSweep
-import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.PointOfSale
 import androidx.compose.material.icons.rounded.Remove
-import androidx.compose.material.icons.rounded.RestaurantMenu
-import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.ShoppingCart
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -40,7 +35,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -52,7 +46,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import com.example.marketpos.i18n.LocalStrings
 import com.example.marketpos.model.AppLanguage
 import com.example.marketpos.model.CartItem
-import com.example.marketpos.model.PosOrder
 import com.example.marketpos.model.Product
 import com.example.marketpos.ui.components.EmptyStateView
 import com.example.marketpos.ui.components.TotalsSummaryBlock
@@ -70,14 +62,12 @@ import com.example.marketpos.viewmodel.MarketWorkerUiState
 
 internal enum class MarketWorkerTab {
     REGISTER,
-    ORDERS,
     BILLS
 }
 
 @Composable
 internal fun MarketWorkerBottomNav(
     activeTab: MarketWorkerTab,
-    pendingOrdersCount: Int,
     onSelectTab: (MarketWorkerTab) -> Unit
 ) {
     val strings = LocalStrings.current
@@ -86,26 +76,16 @@ internal fun MarketWorkerBottomNav(
             val selected = activeTab == tab
             val label = when (tab) {
                 MarketWorkerTab.REGISTER -> strings.posRegister
-                MarketWorkerTab.ORDERS -> strings.navOrders
                 MarketWorkerTab.BILLS -> strings.navBills
             }
             val icon = when (tab) {
                 MarketWorkerTab.REGISTER -> if (selected) Icons.Rounded.PointOfSale else Icons.Outlined.PointOfSale
-                MarketWorkerTab.ORDERS -> if (selected) Icons.Rounded.RestaurantMenu else Icons.Outlined.RestaurantMenu
-                MarketWorkerTab.BILLS -> if (selected) Icons.AutoMirrored.Rounded.ReceiptLong else Icons.Outlined.ReceiptLong
+                MarketWorkerTab.BILLS -> if (selected) Icons.AutoMirrored.Rounded.ReceiptLong else Icons.AutoMirrored.Outlined.ReceiptLong
             }
             NavigationBarItem(
                 selected = selected,
                 onClick = { onSelectTab(tab) },
-                icon = {
-                    if (tab == MarketWorkerTab.ORDERS && pendingOrdersCount > 0) {
-                        BadgedBox(badge = { Badge { Text(pendingOrdersCount.toString()) } }) {
-                            Icon(icon, contentDescription = label)
-                        }
-                    } else {
-                        Icon(icon, contentDescription = label)
-                    }
-                },
+                icon = { Icon(icon, contentDescription = label) },
                 label = { Text(label, maxLines = 1) },
                 modifier = Modifier.testTag("market_worker_nav_${tab.name.lowercase()}")
             )
@@ -120,7 +100,6 @@ internal fun CartPanelContent(
     onDecrementProduct: (String) -> Unit,
     onRemoveCartItem: (String) -> Unit,
     onClearCart: () -> Unit,
-    onSavePendingOrder: () -> Unit,
     onCheckoutClick: () -> Unit
 ) {
     val strings = LocalStrings.current
@@ -208,50 +187,29 @@ internal fun CartPanelContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Button(
+                onClick = onCheckoutClick,
+                shape = RoundedCornerShape(14.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .testTag("proceed_checkout_btn")
             ) {
-                OutlinedButton(
-                    onClick = onSavePendingOrder,
-                    shape = RoundedCornerShape(14.dp),
-                    contentPadding = PaddingValues(horizontal = 10.dp),
-                    modifier = Modifier
-                        .weight(0.46f)
-                        .height(52.dp)
-                        .testTag("save_pending_order_btn")
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Schedule,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = strings.takeOrderBtn,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Button(
-                    onClick = onCheckoutClick,
-                    shape = RoundedCornerShape(14.dp),
-                    contentPadding = PaddingValues(horizontal = 10.dp),
-                    modifier = Modifier
-                        .weight(0.54f)
-                        .height(52.dp)
-                        .testTag("proceed_checkout_btn")
-                ) {
-                    Text(
-                        text = "${strings.checkoutBtn} • ${
-                            CurrencyFormatter.format(uiState.cartTotalRsd, settings.language, settings.rsdPerEur)
-                        }",
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Rounded.Payments,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${strings.checkoutBtn} • ${
+                        CurrencyFormatter.format(uiState.cartTotalRsd, settings.language, settings.rsdPerEur)
+                    }",
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

@@ -9,13 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material.icons.outlined.TableRestaurant
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Analytics
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.PictureAsPdf
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.rounded.TableRestaurant
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +51,7 @@ import com.example.marketpos.model.Product
 import com.example.marketpos.model.ProductCategory
 import com.example.marketpos.model.ReportPeriodType
 import com.example.marketpos.model.VenueMode
+import com.example.marketpos.ui.components.AddFloatingActionButton
 import com.example.marketpos.ui.components.PosTopAppBar
 import com.example.marketpos.ui.screens.admin.AdminDashboardDatePickerDialog
 import com.example.marketpos.ui.screens.admin.AdminDashboardTab
@@ -220,26 +219,18 @@ fun AdminScreen(
             floatingActionButton = {
                 when (activeTab) {
                     AdminTab.PRODUCTS -> {
-                        FloatingActionButton(
+                        AddFloatingActionButton(
                             onClick = { showCreateProductDialog = true },
-                            modifier = Modifier.testTag("admin_add_product_fab")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = strings.addProductTitle
-                            )
-                        }
+                            contentDescription = strings.addProductTitle,
+                            testTag = "admin_add_product_fab"
+                        )
                     }
                     AdminTab.TABLES -> {
-                        FloatingActionButton(
+                        AddFloatingActionButton(
                             onClick = { showCreateTableDialog = true },
-                            modifier = Modifier.testTag("admin_add_table_fab")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = strings.addTableTitle
-                            )
-                        }
+                            contentDescription = strings.addTableTitle,
+                            testTag = "admin_add_table_fab"
+                        )
                     }
                     else -> Unit
                 }
@@ -427,7 +418,7 @@ private fun adminTabLabel(tab: AdminTab, strings: com.example.marketpos.i18n.App
 private fun adminTabIcon(tab: AdminTab, selected: Boolean) = when (tab) {
     AdminTab.DASHBOARD -> if (selected) Icons.Rounded.Analytics else Icons.Outlined.Analytics
     AdminTab.ORDERS -> if (selected) Icons.Rounded.RestaurantMenu else Icons.Outlined.RestaurantMenu
-    AdminTab.WORKER_LOG -> if (selected) Icons.AutoMirrored.Rounded.ReceiptLong else Icons.Outlined.ReceiptLong
+    AdminTab.WORKER_LOG -> if (selected) Icons.AutoMirrored.Rounded.ReceiptLong else Icons.AutoMirrored.Outlined.ReceiptLong
     AdminTab.PRODUCTS -> if (selected) Icons.Rounded.Inventory2 else Icons.Outlined.Inventory2
     AdminTab.TABLES -> if (selected) Icons.Rounded.TableRestaurant else Icons.Outlined.TableRestaurant
 }

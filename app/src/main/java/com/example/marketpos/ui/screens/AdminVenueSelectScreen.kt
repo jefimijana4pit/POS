@@ -123,7 +123,6 @@ fun AdminVenueSelectScreen(
 
                 LocationSectionHeader(
                     title = "${strings.marketsSectionTitle} (${marketStats.size})",
-                    addLabel = strings.addMarketBtn,
                     addTestTag = "admin_add_market_btn",
                     onAdd = { creatingVenueMode = VenueMode.MARKET }
                 )
@@ -143,7 +142,6 @@ fun AdminVenueSelectScreen(
 
                 LocationSectionHeader(
                     title = "${strings.barsSectionTitle} (${barStats.size})",
-                    addLabel = strings.addBarBtn,
                     addTestTag = "admin_add_bar_btn",
                     onAdd = { creatingVenueMode = VenueMode.BAR_RESTAURANT }
                 )

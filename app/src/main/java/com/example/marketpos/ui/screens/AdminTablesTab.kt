@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.TableRestaurant
@@ -29,14 +27,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import com.example.marketpos.i18n.LocalStrings
 import com.example.marketpos.model.BarTable
 import com.example.marketpos.model.sortedByAvailability
+import com.example.marketpos.ui.components.DeleteActionButton
+import com.example.marketpos.ui.components.EditActionButton
 import com.example.marketpos.ui.components.EmptyStateView
 import com.example.marketpos.ui.theme.JetBrainsMonoFamily
 import com.example.marketpos.ui.theme.LocalSemanticColors
@@ -118,14 +116,9 @@ internal fun AdminTablesTab(
                     else -> MaterialTheme.colorScheme.surfaceContainerLow
                 }
                 val itemBorder = when {
-                    table.awaitingCleanup -> BorderStroke(1.5.dp, MaterialTheme.colorScheme.tertiary)
-                    table.isLocked -> BorderStroke(1.5.dp, semanticColors.warning)
+                    table.awaitingCleanup -> BorderStroke(1.2.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.65f))
+                    table.isLocked -> BorderStroke(1.2.dp, semanticColors.warning.copy(alpha = 0.65f))
                     else -> BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                }
-                val iconBorderColor = when {
-                    table.awaitingCleanup -> MaterialTheme.colorScheme.tertiary
-                    table.isLocked -> semanticColors.warning
-                    else -> MaterialTheme.colorScheme.outline
                 }
 
                 Surface(
@@ -145,17 +138,16 @@ internal fun AdminTablesTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Surface(
-                                shape = RoundedCornerShape(10.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 color = statusBg,
-                                border = BorderStroke(1.2.dp, iconBorderColor),
-                                modifier = Modifier.size(34.dp)
+                                modifier = Modifier.size(42.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Rounded.TableRestaurant,
                                         contentDescription = null,
                                         tint = statusFg,
-                                        modifier = Modifier.size(16.dp)
+                                        modifier = Modifier.size(22.dp)
                                     )
                                 }
                             }
@@ -174,82 +166,16 @@ internal fun AdminTablesTab(
                                 )
                             }
                             val canModify = !table.isLocked
-                            IconButton(
+                            EditActionButton(
                                 onClick = { onEditTable(table) },
                                 enabled = canModify,
-                                modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .testTag("admin_edit_table_${table.id}")
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = if (canModify) {
-                                        MaterialTheme.colorScheme.surfaceContainerHighest
-                                    } else {
-                                        MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
-                                    },
-                                    border = BorderStroke(
-                                        1.2.dp,
-                                        if (canModify) {
-                                            MaterialTheme.colorScheme.outline
-                                        } else {
-                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                        }
-                                    ),
-                                    modifier = Modifier.size(34.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Edit,
-                                            contentDescription = strings.edit,
-                                            tint = if (canModify) {
-                                                MaterialTheme.colorScheme.onSurface
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.30f)
-                                            },
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            IconButton(
+                                testTag = "admin_edit_table_${table.id}"
+                            )
+                            DeleteActionButton(
                                 onClick = { onDeleteTable(table) },
                                 enabled = canModify,
-                                modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .testTag("admin_delete_table_${table.id}")
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = if (canModify) {
-                                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.75f)
-                                    } else {
-                                        MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
-                                    },
-                                    border = BorderStroke(
-                                        1.2.dp,
-                                        if (canModify) {
-                                            MaterialTheme.colorScheme.error
-                                        } else {
-                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                        }
-                                    ),
-                                    modifier = Modifier.size(34.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Delete,
-                                            contentDescription = strings.delete,
-                                            tint = if (canModify) {
-                                                MaterialTheme.colorScheme.onErrorContainer
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.30f)
-                                            },
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                            }
+                                testTag = "admin_delete_table_${table.id}"
+                            )
                         }
 
                         Row(

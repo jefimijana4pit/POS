@@ -40,6 +40,7 @@ object SerbianLatinStrings : AppStrings {
     override val logout = "Odjava"
     override val back = "Nazad"
     override val cancel = "Otkaži"
+    override val add = "Dodaj"
     override val save = "Sačuvaj"
     override val delete = "Obriši"
     override val edit = "Izmeni"

@@ -17,22 +17,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.DeleteOutline
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.LocalBar
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Storefront
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +41,9 @@ import com.example.marketpos.model.AppLanguage
 import com.example.marketpos.model.LocationStats
 import com.example.marketpos.model.VenueLocation
 import com.example.marketpos.model.VenueMode
+import com.example.marketpos.ui.components.AddActionButton
+import com.example.marketpos.ui.components.DeleteActionButton
+import com.example.marketpos.ui.components.EditActionButton
 import com.example.marketpos.ui.theme.JetBrainsMonoFamily
 import com.example.marketpos.ui.theme.LocalSemanticColors
 import com.example.marketpos.util.CurrencyFormatter
@@ -180,34 +177,25 @@ internal fun GlobalOverviewCard(
 @Composable
 internal fun LocationSectionHeader(
     title: String,
-    addLabel: String,
     addTestTag: String,
     onAdd: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
         )
-        FilledTonalButton(
+        AddActionButton(
             onClick = onAdd,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .height(42.dp)
-                .testTag(addTestTag)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Add,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(addLabel, style = MaterialTheme.typography.labelLarge)
-        }
+            testTag = addTestTag
+        )
     }
 }
 
@@ -351,31 +339,15 @@ private fun LocationCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                IconButton(
+                EditActionButton(
                     onClick = onEdit,
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
-                        .testTag("edit_loc_${stats.location.id}")
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Edit,
-                        contentDescription = strings.edit,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
+                    testTag = "edit_loc_${stats.location.id}"
+                )
                 if (canDelete) {
-                    IconButton(
+                    DeleteActionButton(
                         onClick = onDelete,
-                        modifier = Modifier
-                            .minimumInteractiveComponentSize()
-                            .testTag("delete_loc_${stats.location.id}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.DeleteOutline,
-                            contentDescription = strings.delete,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
+                        testTag = "delete_loc_${stats.location.id}"
+                    )
                 }
             }
 

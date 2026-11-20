@@ -1,6 +1,7 @@
 package com.example.marketpos.model
 
 import com.example.marketpos.viewmodel.AdminBranchUiState
+import com.example.marketpos.viewmodel.BarWorkerUiState
 import com.example.marketpos.viewmodel.MarketWorkerUiState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -129,23 +130,37 @@ class UserRoleAndIsolationTest {
             workerName = marketWorker2.name
         )
 
-        val w1State = MarketWorkerUiState(
+        val barW1State = BarWorkerUiState(
             currentUser = marketWorker1,
             orders = listOf(o1, o2, o3),
             transactions = listOf(tx1, tx2)
         )
-        assertEquals(listOf("o1", "o3"), w1State.currentWorkerOrders.map { it.id })
-        assertEquals(1, w1State.pendingOrdersCount)
-        assertEquals(listOf("tx1"), w1State.currentWorkerTransactions.map { it.id })
+        assertEquals(listOf("o1", "o3"), barW1State.currentWorkerOrders.map { it.id })
+        assertEquals(1, barW1State.pendingOrdersCount)
+        assertEquals(listOf("tx1"), barW1State.currentWorkerTransactions.map { it.id })
 
-        val w2State = w1State.copy(currentUser = marketWorker2)
-        assertEquals(listOf("o2"), w2State.currentWorkerOrders.map { it.id })
-        assertEquals(1, w2State.pendingOrdersCount)
-        assertEquals(listOf("tx2"), w2State.currentWorkerTransactions.map { it.id })
+        val barW2State = barW1State.copy(currentUser = marketWorker2)
+        assertEquals(listOf("o2"), barW2State.currentWorkerOrders.map { it.id })
+        assertEquals(1, barW2State.pendingOrdersCount)
+        assertEquals(listOf("tx2"), barW2State.currentWorkerTransactions.map { it.id })
 
-        val adminState = w1State.copy(currentUser = adminProfile)
-        assertEquals(listOf("o1", "o2", "o3"), adminState.currentWorkerOrders.map { it.id })
-        assertEquals(2, adminState.pendingOrdersCount)
-        assertEquals(listOf("tx1", "tx2"), adminState.currentWorkerTransactions.map { it.id })
+        val barAdminState = barW1State.copy(currentUser = adminProfile)
+        assertEquals(listOf("o1", "o2", "o3"), barAdminState.currentWorkerOrders.map { it.id })
+        assertEquals(2, barAdminState.pendingOrdersCount)
+        assertEquals(listOf("tx1", "tx2"), barAdminState.currentWorkerTransactions.map { it.id })
+
+        val marketW1State = MarketWorkerUiState(
+            currentUser = marketWorker1,
+            transactions = listOf(tx1, tx2)
+        )
+        assertEquals(listOf("tx1"), marketW1State.currentWorkerTransactions.map { it.id })
+        assertEquals(
+            listOf("tx2"),
+            marketW1State.copy(currentUser = marketWorker2).currentWorkerTransactions.map { it.id }
+        )
+        assertEquals(
+            listOf("tx1", "tx2"),
+            marketW1State.copy(currentUser = adminProfile).currentWorkerTransactions.map { it.id }
+        )
     }
 }

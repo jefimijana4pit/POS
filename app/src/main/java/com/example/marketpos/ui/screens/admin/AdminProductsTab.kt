@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
-import androidx.compose.material.icons.rounded.DeleteOutline
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.FilterChip
@@ -28,7 +26,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import com.example.marketpos.i18n.LocalStrings
 import com.example.marketpos.model.Product
 import com.example.marketpos.ui.components.CategoryAvatar
+import com.example.marketpos.ui.components.DeleteActionButton
+import com.example.marketpos.ui.components.EditActionButton
 import com.example.marketpos.ui.components.EmptyStateView
 import com.example.marketpos.ui.theme.JetBrainsMonoFamily
 import com.example.marketpos.util.CurrencyFormatter
@@ -220,26 +219,14 @@ internal fun AdminProductsTab(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                                IconButton(
+                                EditActionButton(
                                     onClick = { onEditProduct(product) },
-                                    modifier = Modifier.minimumInteractiveComponentSize()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Edit,
-                                        contentDescription = strings.edit,
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                IconButton(
+                                    testTag = "admin_edit_product_${product.id}"
+                                )
+                                DeleteActionButton(
                                     onClick = { onDeleteProduct(product) },
-                                    modifier = Modifier.minimumInteractiveComponentSize()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.DeleteOutline,
-                                        contentDescription = strings.delete,
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
+                                    testTag = "admin_delete_product_${product.id}"
+                                )
                             }
 
                             Row(

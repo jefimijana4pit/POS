@@ -246,22 +246,6 @@ fun MarketPosRoot() {
                             onDecrementProduct = marketVm::decrementCartItem,
                             onRemoveCartItem = marketVm::removeFromCart,
                             onClearCart = marketVm::clearCart,
-                            onSavePendingOrder = marketVm::saveCartAsPendingOrder,
-                            onDismissOrderSavedNotice = marketVm::dismissOrderSavedNotice,
-                            onOpenOrderDetails = marketVm::openOrderDetails,
-                            onCloseOrderDetails = marketVm::closeOrderDetails,
-                            onEditOrder = marketVm::startEditingOrder,
-                            onFinishEditingOrder = { marketVm.finishEditingOrder(true) },
-                            onAddProductToEditingOrder = marketVm::addProductToEditingOrder,
-                            onIncrementOrderItem = marketVm::incrementOrderItem,
-                            onDecrementOrderItem = marketVm::decrementOrderItem,
-                            onCancelOrderItem = marketVm::cancelOrderItem,
-                            onCancelFullOrder = marketVm::cancelFullOrder,
-                            onCompleteOrderPayment = { order, method, cashRsd ->
-                                marketVm.completeOrderPayment(context, order, method, cashRsd) { tx ->
-                                    navController.navigate(ReceiptRoute(tx.id))
-                                }
-                            },
                             onOpenBill = { txId ->
                                 navController.navigate(ReceiptRoute(txId))
                             },
