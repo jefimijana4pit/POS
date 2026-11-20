@@ -312,6 +312,8 @@ interface AppStrings {
     val reportColBills: String
     val reportColTables: String
     val reportColProducts: String
+    val reportColItem: String
+    val reportColQty: String
     val reportColRevenue: String
     val reportFinShort: String
     val reportCancShort: String

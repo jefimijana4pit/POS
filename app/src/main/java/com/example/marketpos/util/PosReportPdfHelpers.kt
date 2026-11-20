@@ -90,10 +90,15 @@ internal object PosReportPdfHelpers {
         }
     }
 
-    fun createStaticLayout(text: String, paint: TextPaint, widthPx: Int): StaticLayout {
+    fun createStaticLayout(
+        text: String,
+        paint: TextPaint,
+        widthPx: Int,
+        alignment: Layout.Alignment = Layout.Alignment.ALIGN_NORMAL
+    ): StaticLayout {
         return StaticLayout.Builder
             .obtain(text, 0, text.length, paint, widthPx.coerceAtLeast(10))
-            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setAlignment(alignment)
             .setLineSpacing(1.5f, 1.0f)
             .setIncludePad(false)
             .build()

@@ -1,6 +1,7 @@
 package com.example.marketpos.ui.screens.reports
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -22,11 +23,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.marketpos.i18n.LocalStrings
 import com.example.marketpos.model.AppLanguage
 import com.example.marketpos.model.LocationReportSummary
+import com.example.marketpos.model.WorkerProductSoldStat
 import com.example.marketpos.model.WorkerReportRow
 import com.example.marketpos.ui.theme.JetBrainsMonoFamily
 import com.example.marketpos.util.CurrencyFormatter
@@ -265,14 +270,170 @@ internal fun WorkerReportRowCard(
             }
 
             if (row.productsSold.isNotEmpty()) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                val breakdown = row.productsSold.joinToString(", ") { stat ->
-                    "${stat.quantity}× ${stat.displayName(language)}"
-                }
+                WorkerProductsTable(
+                    workerId = row.workerId,
+                    products = row.productsSold,
+                    totalUnitsSold = row.totalUnitsSold,
+                    totalRevenueRsd = row.revenueRsd,
+                    language = language,
+                    rsdPerEur = rsdPerEur
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkerProductsTable(
+    workerId: String,
+    products: List<WorkerProductSoldStat>,
+    totalUnitsSold: Int,
+    totalRevenueRsd: Double,
+    language: AppLanguage,
+    rsdPerEur: Double
+) {
+    val strings = LocalStrings.current
+
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("report_worker_products_table_$workerId")
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Table header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "${row.totalUnitsSold} ${strings.reportUnitsShort} — $breakdown",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = strings.reportColItem,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(0.46f)
+                )
+                Text(
+                    text = strings.reportColQty,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.18f)
+                )
+                Text(
+                    text = strings.reportColRevenue,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.36f)
+                )
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f))
+
+            // Table rows
+            products.forEachIndexed { index, stat ->
+                if (index > 0) {
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (index % 2 == 1) {
+                                MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.55f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerLowest
+                            }
+                        )
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stat.displayName(language),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(0.46f)
+                    )
+                    Text(
+                        text = "${stat.quantity}×",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = JetBrainsMonoFamily,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.End,
+                        maxLines = 1,
+                        modifier = Modifier.weight(0.18f)
+                    )
+                    Text(
+                        text = CurrencyFormatter.format(stat.revenueRsd, language, rsdPerEur),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = JetBrainsMonoFamily,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.End,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(0.36f)
+                    )
+                }
+            }
+
+            // Table footer summary row
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = strings.totalLabel,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.46f)
+                )
+                Text(
+                    text = "$totalUnitsSold ${strings.reportUnitsShort}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = JetBrainsMonoFamily,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    modifier = Modifier.weight(0.18f)
+                )
+                Text(
+                    text = CurrencyFormatter.format(totalRevenueRsd, language, rsdPerEur),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = JetBrainsMonoFamily,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(0.36f)
                 )
             }
         }

@@ -169,6 +169,7 @@ internal fun KpiCard(
     value: String,
     highlight: Boolean,
     isWarning: Boolean = false,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val containerColor = when {
@@ -187,13 +188,11 @@ internal fun KpiCard(
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
-    ) {
+    val cardContent: @Composable () -> Unit = {
         Column(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
@@ -213,6 +212,25 @@ internal fun KpiCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = modifier,
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = containerColor)
+        ) {
+            cardContent()
+        }
+    } else {
+        Card(
+            modifier = modifier,
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = containerColor)
+        ) {
+            cardContent()
         }
     }
 }

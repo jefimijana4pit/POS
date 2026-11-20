@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
@@ -30,7 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -64,8 +67,12 @@ internal fun AdminDashboardTab(
     val rate = settings.rsdPerEur
     val pickedDayMillis = uiState.selectedDashboardDayMillis
     var restockingProduct by remember { mutableStateOf<Product?>(null) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val lowStockAlertsIndex = if (pickedDayMillis != null) 5 else 3
 
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -153,7 +160,18 @@ internal fun AdminDashboardTab(
                         value = uiState.lowOrOutOfStockCount.toString(),
                         highlight = false,
                         isWarning = uiState.lowOrOutOfStockCount > 0,
-                        modifier = Modifier.weight(1f)
+                        onClick = if (uiState.lowOrOutOfStockProducts.isNotEmpty()) {
+                            {
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(index = lowStockAlertsIndex)
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("kpi_low_stock_card")
                     )
                 }
             }
@@ -212,13 +230,15 @@ internal fun AdminDashboardTab(
         }
 
         if (uiState.lowOrOutOfStockProducts.isNotEmpty()) {
-            item {
+            item(key = "low_stock_alerts_section") {
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f)
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("low_stock_alerts_section")
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),

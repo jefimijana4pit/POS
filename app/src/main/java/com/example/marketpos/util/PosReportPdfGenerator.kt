@@ -9,6 +9,8 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Environment
 import android.provider.MediaStore
+import android.text.Layout
+import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.FileProvider
@@ -17,6 +19,7 @@ import com.example.marketpos.model.AppSettings
 import com.example.marketpos.model.LocationReportSummary
 import com.example.marketpos.model.PdfExportResult
 import com.example.marketpos.model.ReportPeriodType
+import com.example.marketpos.model.WorkerProductSoldStat
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,11 +35,16 @@ object PosReportPdfGenerator {
     private const val PAGE_BOTTOM = PAGE_HEIGHT - 36f
 
     // Column widths sum to 535pt (= 595 - 60)
-    private const val COL_WORKER_W = 105f
+    private const val COL_WORKER_W = 100f
     private const val COL_BILLS_W = 68f
-    private const val COL_TABLES_W = 46f
-    private const val COL_PRODUCTS_W = 228f
-    private const val COL_REVENUE_W = 88f
+    private const val COL_TABLES_W = 44f
+    private const val COL_PRODUCTS_W = 237f
+    private const val COL_REVENUE_W = 86f
+
+    // Sub-column widths inside COL_PRODUCTS_W (sum = 237pt)
+    private const val SUB_COL_ITEM_W = 133f
+    private const val SUB_COL_QTY_W = 34f
+    private const val SUB_COL_AMOUNT_W = 70f
 
     fun buildFileName(summary: LocationReportSummary): String {
         val rawLoc = if (summary.isGlobal || summary.location == null) {
@@ -250,62 +258,236 @@ object PosReportPdfGenerator {
 
         y = drawTableHeader(canvas, y)
 
+        val subHeaderBgPaint = Paint().apply {
+            color = Color.rgb(236, 244, 239)
+            style = Paint.Style.FILL
+        }
+        val subBorderPaint = Paint().apply {
+            color = Color.rgb(212, 222, 217)
+            style = Paint.Style.STROKE
+            strokeWidth = 0.6f
+        }
+        val subHeaderTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.rgb(48, 66, 58)
+            textSize = 7.4f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val subItemPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.rgb(28, 34, 31)
+            textSize = 8.0f
+        }
+        val subQtyPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.rgb(55, 68, 62)
+            textSize = 8.0f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+
+        data class PdfSubItemRow(
+            val nameLayout: StaticLayout,
+            val qtyLayout: StaticLayout,
+            val amountLayout: StaticLayout,
+            val height: Float
+        )
+
+        fun buildSubItemRows(items: List<WorkerProductSoldStat>): List<PdfSubItemRow> {
+            return items.map { stat ->
+                val nameLayout = PosReportPdfHelpers.createStaticLayout(
+                    text = stat.displayName(lang),
+                    paint = subItemPaint,
+                    widthPx = (SUB_COL_ITEM_W - 8f).toInt()
+                )
+                val qtyLayout = PosReportPdfHelpers.createStaticLayout(
+                    text = "${stat.quantity}×",
+                    paint = subQtyPaint,
+                    widthPx = (SUB_COL_QTY_W - 6f).toInt(),
+                    alignment = Layout.Alignment.ALIGN_OPPOSITE
+                )
+                val amountLayout = PosReportPdfHelpers.createStaticLayout(
+                    text = CurrencyFormatter.format(stat.revenueRsd, lang, rate),
+                    paint = subItemPaint,
+                    widthPx = (SUB_COL_AMOUNT_W - 8f).toInt(),
+                    alignment = Layout.Alignment.ALIGN_OPPOSITE
+                )
+                val rowH = (maxOf(nameLayout.height, qtyLayout.height, amountLayout.height) + 6f)
+                    .coerceAtLeast(14f)
+                PdfSubItemRow(nameLayout, qtyLayout, amountLayout, rowH)
+            }
+        }
+
+        val subHeaderH = 14f
+        val subFooterH = 14f
+        val maxSingleChunkHeight = (PAGE_BOTTOM - PAGE_TOP - 80f).coerceAtLeast(160f)
+
         if (summary.workerRows.isEmpty()) {
             val emptyRect = RectF(MARGIN_H, y, MARGIN_H + CONTENT_WIDTH, y + 32f)
             canvas.drawRect(emptyRect, borderPaint)
             canvas.drawText(strings.reportNoWorkerData, MARGIN_H + 10f, y + 20f, mutedPaint)
         } else {
             summary.workerRows.forEachIndexed { index, row ->
-                val workerLayout = PosReportPdfHelpers.createStaticLayout(row.workerName, bodyBoldPaint, (COL_WORKER_W - 8f).toInt())
-                val billsText = buildString {
-                    append("${strings.reportFinShort}: ${row.finishedBillsCount}\n")
-                    append("${strings.reportCancShort}: ${row.cancelledOrdersCount}")
-                    if (row.cancelledItemsCount > 0) {
-                        append(" (${row.cancelledItemsCount} ${strings.reportItemsShort})")
+                val allSubRows = buildSubItemRows(row.productsSold)
+                val chunks: List<List<PdfSubItemRow>> = if (allSubRows.isEmpty()) {
+                    listOf(emptyList())
+                } else {
+                    val result = mutableListOf<List<PdfSubItemRow>>()
+                    var current = mutableListOf<PdfSubItemRow>()
+                    var accH = subHeaderH + subFooterH
+                    allSubRows.forEach { itemRow ->
+                        if (current.isNotEmpty() && accH + itemRow.height > maxSingleChunkHeight) {
+                            result.add(current)
+                            current = mutableListOf()
+                            accH = subHeaderH + subFooterH
+                        }
+                        current.add(itemRow)
+                        accH += itemRow.height
                     }
-                }
-                val billsLayout = PosReportPdfHelpers.createStaticLayout(billsText, bodyPaint, (COL_BILLS_W - 8f).toInt())
-                val tablesText = if (row.tablesHandledCount > 0) row.tablesHandledCount.toString() else "—"
-                val tablesLayout = PosReportPdfHelpers.createStaticLayout(tablesText, bodyPaint, (COL_TABLES_W - 8f).toInt())
-                val productsText = PosReportPdfHelpers.formatProductsColumn(row, lang, strings)
-                val productsLayout = PosReportPdfHelpers.createStaticLayout(productsText, bodyPaint, (COL_PRODUCTS_W - 10f).toInt())
-                val revText = CurrencyFormatter.format(row.revenueRsd, lang, rate)
-                val revLayout = PosReportPdfHelpers.createStaticLayout(revText, bodyBoldPaint, (COL_REVENUE_W - 8f).toInt())
-
-                val contentHeight = maxOf(
-                    workerLayout.height,
-                    billsLayout.height,
-                    tablesLayout.height,
-                    productsLayout.height,
-                    revLayout.height
-                )
-                val rowHeight = (contentHeight + 12f).coerceAtLeast(28f)
-
-                if (y + rowHeight > PAGE_BOTTOM - 28f) {
-                    y = startNewPage()
+                    if (current.isNotEmpty()) result.add(current)
+                    result
                 }
 
-                val rowRect = RectF(MARGIN_H, y, MARGIN_H + CONTENT_WIDTH, y + rowHeight)
-                if (index % 2 == 1) canvas.drawRect(rowRect, altRowPaint)
-                canvas.drawRect(rowRect, borderPaint)
+                chunks.forEachIndexed { chunkIdx, subRowsChunk ->
+                    val isFirstChunk = chunkIdx == 0
+                    val isLastChunk = chunkIdx == chunks.lastIndex
 
-                val cells = listOf(
-                    COL_WORKER_W to workerLayout,
-                    COL_BILLS_W to billsLayout,
-                    COL_TABLES_W to tablesLayout,
-                    COL_PRODUCTS_W to productsLayout,
-                    COL_REVENUE_W to revLayout
-                )
-                var x = MARGIN_H
-                cells.forEachIndexed { cIdx, (w, layout) ->
-                    if (cIdx > 0) canvas.drawLine(x, y, x, y + rowHeight, borderPaint)
-                    canvas.save()
-                    canvas.translate(x + 4f, y + 6f)
-                    layout.draw(canvas)
-                    canvas.restore()
-                    x += w
+                    val workerDisplayName = if (isFirstChunk) row.workerName else "${row.workerName} (cont.)"
+                    val workerLayout = PosReportPdfHelpers.createStaticLayout(
+                        workerDisplayName,
+                        bodyBoldPaint,
+                        (COL_WORKER_W - 8f).toInt()
+                    )
+                    val billsText = if (isFirstChunk) {
+                        buildString {
+                            append("${strings.reportFinShort}: ${row.finishedBillsCount}\n")
+                            append("${strings.reportCancShort}: ${row.cancelledOrdersCount}")
+                            if (row.cancelledItemsCount > 0) {
+                                append(" (${row.cancelledItemsCount} ${strings.reportItemsShort})")
+                            }
+                        }
+                    } else {
+                        "—"
+                    }
+                    val billsLayout = PosReportPdfHelpers.createStaticLayout(billsText, bodyPaint, (COL_BILLS_W - 8f).toInt())
+                    val tablesText = if (isFirstChunk && row.tablesHandledCount > 0) row.tablesHandledCount.toString() else "—"
+                    val tablesLayout = PosReportPdfHelpers.createStaticLayout(tablesText, bodyPaint, (COL_TABLES_W - 8f).toInt())
+                    val revText = if (isFirstChunk) CurrencyFormatter.format(row.revenueRsd, lang, rate) else "—"
+                    val revLayout = PosReportPdfHelpers.createStaticLayout(
+                        revText,
+                        bodyBoldPaint,
+                        (COL_REVENUE_W - 8f).toInt(),
+                        alignment = Layout.Alignment.ALIGN_OPPOSITE
+                    )
+
+                    val productsContentH = if (subRowsChunk.isEmpty()) {
+                        16f
+                    } else {
+                        subHeaderH + subRowsChunk.sumOf { it.height.toDouble() }.toFloat() +
+                            if (isLastChunk) subFooterH else 0f
+                    }
+
+                    val standardColumnsH = maxOf(
+                        workerLayout.height,
+                        billsLayout.height,
+                        tablesLayout.height,
+                        revLayout.height
+                    ) + 12f
+                    val rowHeight = maxOf(standardColumnsH, productsContentH).coerceAtLeast(28f)
+
+                    if (y + rowHeight > PAGE_BOTTOM - 28f) {
+                        y = startNewPage()
+                    }
+
+                    val rowRect = RectF(MARGIN_H, y, MARGIN_H + CONTENT_WIDTH, y + rowHeight)
+                    if (index % 2 == 1) canvas.drawRect(rowRect, altRowPaint)
+                    canvas.drawRect(rowRect, borderPaint)
+
+                    val colXWorker = MARGIN_H
+                    val colXBills = colXWorker + COL_WORKER_W
+                    val colXTables = colXBills + COL_BILLS_W
+                    val colXProducts = colXTables + COL_TABLES_W
+                    val colXRevenue = colXProducts + COL_PRODUCTS_W
+
+                    // Vertical main table column borders
+                    canvas.drawLine(colXBills, y, colXBills, y + rowHeight, borderPaint)
+                    canvas.drawLine(colXTables, y, colXTables, y + rowHeight, borderPaint)
+                    canvas.drawLine(colXProducts, y, colXProducts, y + rowHeight, borderPaint)
+                    canvas.drawLine(colXRevenue, y, colXRevenue, y + rowHeight, borderPaint)
+
+                    // Worker, Bills, Tables, Revenue cells
+                    listOf(
+                        colXWorker to workerLayout,
+                        colXBills to billsLayout,
+                        colXTables to tablesLayout,
+                        colXRevenue to revLayout
+                    ).forEach { (cellX, layout) ->
+                        canvas.save()
+                        canvas.translate(cellX + 4f, y + 6f)
+                        layout.draw(canvas)
+                        canvas.restore()
+                    }
+
+                    // Products tabular sub-table inside COL_PRODUCTS_W
+                    if (subRowsChunk.isEmpty()) {
+                        val emptyLayout = PosReportPdfHelpers.createStaticLayout("—", bodyPaint, (COL_PRODUCTS_W - 8f).toInt())
+                        canvas.save()
+                        canvas.translate(colXProducts + 4f, y + 6f)
+                        emptyLayout.draw(canvas)
+                        canvas.restore()
+                    } else {
+                        var subY = y
+                        val subXQty = colXProducts + SUB_COL_ITEM_W
+                        val subXAmount = subXQty + SUB_COL_QTY_W
+
+                        // Mini header row
+                        val subHeaderRect = RectF(colXProducts, subY, colXProducts + COL_PRODUCTS_W, subY + subHeaderH)
+                        canvas.drawRect(subHeaderRect, subHeaderBgPaint)
+                        canvas.drawLine(colXProducts, subY + subHeaderH, colXProducts + COL_PRODUCTS_W, subY + subHeaderH, subBorderPaint)
+
+                        val hItem = PosReportPdfHelpers.createStaticLayout(strings.reportColItem, subHeaderTextPaint, (SUB_COL_ITEM_W - 8f).toInt())
+                        val hQty = PosReportPdfHelpers.createStaticLayout(strings.reportColQty, subHeaderTextPaint, (SUB_COL_QTY_W - 6f).toInt(), Layout.Alignment.ALIGN_OPPOSITE)
+                        val hAmt = PosReportPdfHelpers.createStaticLayout(strings.reportColRevenue, subHeaderTextPaint, (SUB_COL_AMOUNT_W - 8f).toInt(), Layout.Alignment.ALIGN_OPPOSITE)
+
+                        canvas.save(); canvas.translate(colXProducts + 4f, subY + 3f); hItem.draw(canvas); canvas.restore()
+                        canvas.save(); canvas.translate(subXQty + 3f, subY + 3f); hQty.draw(canvas); canvas.restore()
+                        canvas.save(); canvas.translate(subXAmount + 4f, subY + 3f); hAmt.draw(canvas); canvas.restore()
+                        subY += subHeaderH
+
+                        // Individual item rows
+                        subRowsChunk.forEachIndexed { rIdx, subRow ->
+                            if (rIdx > 0) {
+                                canvas.drawLine(colXProducts, subY, colXProducts + COL_PRODUCTS_W, subY, subBorderPaint)
+                            }
+                            canvas.save(); canvas.translate(colXProducts + 4f, subY + 3f); subRow.nameLayout.draw(canvas); canvas.restore()
+                            canvas.save(); canvas.translate(subXQty + 3f, subY + 3f); subRow.qtyLayout.draw(canvas); canvas.restore()
+                            canvas.save(); canvas.translate(subXAmount + 4f, subY + 3f); subRow.amountLayout.draw(canvas); canvas.restore()
+                            subY += subRow.height
+                        }
+
+                        // Sub-table vertical dividers across header and item rows
+                        canvas.drawLine(subXQty, y, subXQty, subY, subBorderPaint)
+                        canvas.drawLine(subXAmount, y, subXAmount, subY, subBorderPaint)
+
+                        // Units total footer strip on the final chunk for this worker
+                        if (isLastChunk) {
+                            val footerTop = (y + rowHeight - subFooterH).coerceAtLeast(subY)
+                            val footerRect = RectF(colXProducts, footerTop, colXProducts + COL_PRODUCTS_W, y + rowHeight)
+                            canvas.drawRect(footerRect, subHeaderBgPaint)
+                            canvas.drawLine(colXProducts, footerTop, colXProducts + COL_PRODUCTS_W, footerTop, subBorderPaint)
+                            val totalUnitsLayout = PosReportPdfHelpers.createStaticLayout(
+                                "${strings.totalLabel}: ${row.totalUnitsSold} ${strings.reportUnitsShort}",
+                                subHeaderTextPaint,
+                                (COL_PRODUCTS_W - 8f).toInt()
+                            )
+                            canvas.save()
+                            canvas.translate(colXProducts + 4f, footerTop + 3f)
+                            totalUnitsLayout.draw(canvas)
+                            canvas.restore()
+                        }
+
+                        // Re-stroke outer cell border cleanly over sub-fills
+                        canvas.drawRect(rowRect, borderPaint)
+                    }
+
+                    y += rowHeight
                 }
-                y += rowHeight
             }
 
             val totalRowH = 30f
@@ -326,7 +508,12 @@ object PosReportPdfGenerator {
             var x = MARGIN_H
             totalCells.forEachIndexed { idx, (w, txt) ->
                 if (idx > 0) canvas.drawLine(x, y, x, y + totalRowH, borderPaint)
-                val layout = PosReportPdfHelpers.createStaticLayout(txt, bodyBoldPaint, (w - 8f).toInt())
+                val align = if (idx == totalCells.lastIndex) {
+                    Layout.Alignment.ALIGN_OPPOSITE
+                } else {
+                    Layout.Alignment.ALIGN_NORMAL
+                }
+                val layout = PosReportPdfHelpers.createStaticLayout(txt, bodyBoldPaint, (w - 8f).toInt(), align)
                 canvas.save()
                 canvas.translate(x + 4f, y + 8f)
                 layout.draw(canvas)
