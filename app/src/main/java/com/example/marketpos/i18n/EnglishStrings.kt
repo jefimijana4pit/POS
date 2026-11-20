@@ -209,6 +209,11 @@ object EnglishStrings : AppStrings {
     override val lowStockFilter = "Low Stock"
     override val outOfStockFilter = "Out of Stock"
     override val quickRestockBtn = "+10 Restock"
+    override val restockBtn = "Restock"
+    override val addStockTitle = "Add to Stock"
+    override val addStockQuantityLabel = "Quantity to add"
+    override val currentStockLabel = "Current stock"
+    override val newStockLabel = "New stock"
     override val deleteProductTitle = "Delete Product"
     override val deleteProductConfirm: (String) -> String = { name -> "Are you sure you want to remove \"$name\" from the catalog?" }
     override val validationRequiredError = "Please fill in all required fields."

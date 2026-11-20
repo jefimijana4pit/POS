@@ -39,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.marketpos.i18n.LocalStrings
+import com.example.marketpos.model.Product
+import com.example.marketpos.ui.components.AddActionButton
 import com.example.marketpos.ui.components.CategoryAvatar
 import com.example.marketpos.ui.components.EmptyStateView
 import com.example.marketpos.ui.theme.JetBrainsMonoFamily
@@ -65,6 +67,7 @@ internal fun GlobalStockTab(
     var query by rememberSaveable { mutableStateOf("") }
     var stockFilter by rememberSaveable { mutableStateOf(GlobalStockFilter.ALL) }
     var selectedLocationId by rememberSaveable { mutableStateOf<String?>(null) }
+    var restockingProduct by remember { mutableStateOf<Product?>(null) }
 
     val locationsById = remember(uiState.locations) {
         uiState.locations.associateBy { it.id }
@@ -294,22 +297,24 @@ internal fun GlobalStockTab(
                                     )
                                 }
 
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     OutlinedButton(
                                         onClick = { onAdjustStock(product.id, -1) },
                                         enabled = product.stockQuantity > 0,
-                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
-                                        modifier = Modifier.height(34.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                        modifier = Modifier.height(40.dp)
                                     ) {
-                                        Text("-1", style = MaterialTheme.typography.labelMedium)
+                                        Text("-1", style = MaterialTheme.typography.labelLarge)
                                     }
-                                    OutlinedButton(
-                                        onClick = { onAdjustStock(product.id, 10) },
-                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
-                                        modifier = Modifier.height(34.dp)
-                                    ) {
-                                        Text(strings.quickRestockBtn, style = MaterialTheme.typography.labelMedium)
-                                    }
+                                    AddActionButton(
+                                        onClick = { restockingProduct = product },
+                                        label = strings.restockBtn,
+                                        testTag = "global_restock_product_${product.id}"
+                                    )
                                 }
                             }
                         }
@@ -317,5 +322,17 @@ internal fun GlobalStockTab(
                 }
             }
         }
+    }
+
+    restockingProduct?.let { target ->
+        AddStockDialog(
+            product = target,
+            language = lang,
+            onDismiss = { restockingProduct = null },
+            onConfirmAdd = { quantityToAdd ->
+                onAdjustStock(target.id, quantityToAdd)
+                restockingProduct = null
+            }
+        )
     }
 }

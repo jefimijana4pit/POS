@@ -27,6 +27,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.marketpos.i18n.LocalStrings
+import com.example.marketpos.model.Product
+import com.example.marketpos.ui.components.AddActionButton
 import com.example.marketpos.ui.components.RevenueOverTimeChartCard
 import com.example.marketpos.ui.components.SalesByWorkerChartCard
 import com.example.marketpos.ui.components.TopProductsChartCard
@@ -49,7 +55,7 @@ internal fun AdminDashboardTab(
     onOpenDatePicker: () -> Unit,
     onOpenReportDialog: () -> Unit,
     onReprintReceipt: (String) -> Unit,
-    onQuickRestock: (String) -> Unit,
+    onAdjustStock: (String, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val strings = LocalStrings.current
@@ -57,6 +63,7 @@ internal fun AdminDashboardTab(
     val lang = settings.language
     val rate = settings.rsdPerEur
     val pickedDayMillis = uiState.selectedDashboardDayMillis
+    var restockingProduct by remember { mutableStateOf<Product?>(null) }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -261,9 +268,11 @@ internal fun AdminDashboardTab(
                                             }
                                         )
                                     }
-                                    TextButton(onClick = { onQuickRestock(product.id) }) {
-                                        Text(strings.quickRestockBtn)
-                                    }
+                                    AddActionButton(
+                                        onClick = { restockingProduct = product },
+                                        label = strings.restockBtn,
+                                        testTag = "dashboard_restock_product_${product.id}"
+                                    )
                                 }
                             }
                         }
@@ -282,6 +291,8 @@ internal fun AdminDashboardTab(
                         products = uiState.topProducts,
                         language = lang,
                         rsdPerEur = rate,
+                        selectedDayTimestampMillis = pickedDayMillis,
+                        onClearSelectedDay = { onSelectDay(null) },
                         modifier = Modifier.weight(1f)
                     )
                     SalesByWorkerChartCard(
@@ -297,7 +308,9 @@ internal fun AdminDashboardTab(
                 TopProductsChartCard(
                     products = uiState.topProducts,
                     language = lang,
-                    rsdPerEur = rate
+                    rsdPerEur = rate,
+                    selectedDayTimestampMillis = pickedDayMillis,
+                    onClearSelectedDay = { onSelectDay(null) }
                 )
             }
             item {
@@ -308,5 +321,17 @@ internal fun AdminDashboardTab(
                 )
             }
         }
+    }
+
+    restockingProduct?.let { target ->
+        AddStockDialog(
+            product = target,
+            language = lang,
+            onDismiss = { restockingProduct = null },
+            onConfirmAdd = { quantityToAdd ->
+                onAdjustStock(target.id, quantityToAdd)
+                restockingProduct = null
+            }
+        )
     }
 }

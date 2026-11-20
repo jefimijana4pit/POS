@@ -216,6 +216,11 @@ interface AppStrings {
     val lowStockFilter: String
     val outOfStockFilter: String
     val quickRestockBtn: String
+    val restockBtn: String
+    val addStockTitle: String
+    val addStockQuantityLabel: String
+    val currentStockLabel: String
+    val newStockLabel: String
     val deleteProductTitle: String
     val deleteProductConfirm: (String) -> String
     val validationRequiredError: String

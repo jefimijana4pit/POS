@@ -26,6 +26,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,6 +64,7 @@ fun RevenueOverTimeChartCard(
     modifier: Modifier = Modifier
 ) {
     val strings = LocalStrings.current
+    val currentOnSelectDay by rememberUpdatedState(onSelectDay)
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.tertiary
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -162,7 +165,7 @@ fun RevenueOverTimeChartCard(
                                     abs(tapOffset.x - x)
                                 }
                                 if (nearestIndex != null) {
-                                    onSelectDay(points[nearestIndex].dayTimestampMillis)
+                                    currentOnSelectDay(points[nearestIndex].dayTimestampMillis)
                                 }
                             }
                         }

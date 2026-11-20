@@ -82,6 +82,8 @@ internal fun GlobalEarningsTab(
     val rate = settings.rsdPerEur
 
     var venueFilter by rememberSaveable { mutableStateOf(GlobalVenueFilter.ALL) }
+    var selectedDayMillis by rememberSaveable { mutableStateOf<Long?>(null) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
     val filteredStats = remember(uiState.locationStats, venueFilter) {
         when (venueFilter) {
@@ -116,8 +118,18 @@ internal fun GlobalEarningsTab(
         PosAnalyticsCalculator.computeDailyRevenue(filteredTransactions)
     }
 
-    val topProducts = remember(filteredTransactions) {
-        PosAnalyticsCalculator.computeTopProducts(filteredTransactions)
+    val topProductsTransactions = remember(filteredTransactions, selectedDayMillis) {
+        if (selectedDayMillis == null) {
+            filteredTransactions
+        } else {
+            filteredTransactions.filter {
+                CurrencyFormatter.localDayStartMillis(it.timestampMillis) == selectedDayMillis
+            }
+        }
+    }
+
+    val topProducts = remember(topProductsTransactions) {
+        PosAnalyticsCalculator.computeTopProducts(topProductsTransactions)
     }
 
     LazyColumn(
@@ -385,9 +397,15 @@ internal fun GlobalEarningsTab(
         item {
             RevenueOverTimeChartCard(
                 points = dailyPoints,
-                selectedDayTimestampMillis = null,
-                onSelectDay = {},
-                onOpenDatePicker = onOpenReportDialog,
+                selectedDayTimestampMillis = selectedDayMillis,
+                onSelectDay = { dayMillis ->
+                    selectedDayMillis = if (dayMillis != null && selectedDayMillis == dayMillis) {
+                        null
+                    } else {
+                        dayMillis
+                    }
+                },
+                onOpenDatePicker = { showDatePicker = true },
                 language = lang,
                 rsdPerEur = rate
             )
@@ -397,9 +415,19 @@ internal fun GlobalEarningsTab(
             TopProductsChartCard(
                 products = topProducts,
                 language = lang,
-                rsdPerEur = rate
+                rsdPerEur = rate,
+                selectedDayTimestampMillis = selectedDayMillis,
+                onClearSelectedDay = { selectedDayMillis = null }
             )
         }
+    }
+
+    if (showDatePicker) {
+        AdminDashboardDatePickerDialog(
+            selectedDashboardDayMillis = selectedDayMillis,
+            onDismiss = { showDatePicker = false },
+            onSelectDate = { localDay -> selectedDayMillis = localDay }
+        )
     }
 }
 

@@ -209,6 +209,11 @@ object SerbianLatinStrings : AppStrings {
     override val lowStockFilter = "Niske zalihe"
     override val outOfStockFilter = "Rasprodato"
     override val quickRestockBtn = "+10 dopuna"
+    override val restockBtn = "Dopuni"
+    override val addStockTitle = "Dodaj na stanje"
+    override val addStockQuantityLabel = "Količina za dodavanje"
+    override val currentStockLabel = "Trenutno stanje"
+    override val newStockLabel = "Novo stanje"
     override val deleteProductTitle = "Brisanje artikla"
     override val deleteProductConfirm: (String) -> String = { name -> "Da li sigurno želite da obrišete \"$name\" iz kataloga?" }
     override val validationRequiredError = "Popunite sva obavezna polja."

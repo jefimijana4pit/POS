@@ -277,7 +277,7 @@ fun AdminScreen(
                         onOpenDatePicker = { showDatePicker = true },
                         onOpenReportDialog = { showReportDialog = true },
                         onReprintReceipt = onReprintReceipt,
-                        onQuickRestock = { productId -> onAdjustStock(productId, 10) },
+                        onAdjustStock = onAdjustStock,
                         modifier = Modifier.weight(1f)
                     )
                     AdminTab.ORDERS -> OrdersListPane(
